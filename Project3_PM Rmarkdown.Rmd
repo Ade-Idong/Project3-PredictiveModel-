@@ -1,0 +1,80 @@
+---
+title: "Project3 Rmarkdown"
+author: "Faith Adeyemi Allen"
+date: "2024-12-13"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+## Project Overview
+
+# Title: Predicting Weight Based on Height and Gender
+
+```
+In this project, we will develop a predictive model to estimate weight using height and gender as predictors. This will demonstrate how machine learning can be applied to gain insights from data.
+
+Using the "height and weiht" data from project 1 and 2, we will follow the following steps to achive our goal for this project.
+
+```
+
+## Step 1: Load Libraries
+```{r load-libraries, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(caret)
+```
+
+## Step 2: Load the Data
+```{r load data}
+dataset <- read.csv("C:/Users/HP/OneDrive/Documents/Portfolio/Project3_PredictiveModel/data/cleaned_height_weight_data.csv")
+head(dataset)
+```
+
+## Step 3: Split the Data
+```{r split-data}
+set.seed(123) # For reproducibility
+training_index <- createDataPartition(dataset$Weight_in_pound, p = 0.8, list = FALSE)
+training_data <- dataset[training_index, ]
+testing_data <- dataset[-training_index, ]
+```
+
+## Step 4: Train the Model
+```{r train-model}
+model <- lm(Weight_in_pound ~ Height_in_inchies + Gender, data = training_data)
+summary(model)
+```
+
+## Step 5: Evaluate the Model
+```{r evaluate-model}
+predictions <- predict(model, newdata = testing_data)
+mse <- mean((predictions - testing_data$Weight_in_pound)^2)
+r_squared <- 1 - (sum((predictions - testing_data$Weight_in_pound)^2) / 
+                    sum((testing_data$Weight_in_pound - mean(testing_data$Weight_in_pound))^2))
+
+cat("Mean Squared Error:", mse, "\\n")
+cat("R-squared:", r_squared, "\\n")
+```
+
+## Step 6: Visualize Results
+
+### Predicted vs Actual
+```{r plot-predicted-vs-actual, echo=FALSE}
+ggplot(testing_data, aes(x = predictions, y = Weight_in_pound)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "blue") +
+  labs(title = "Predicted vs Actual Weight",
+       x = "Predicted Weight",
+       y = "Actual Weight")
+```
+
+### Residual Plot
+```{r plot-residuals, echo=FALSE}
+residuals <- testing_data$Weight_in_pound - predictions
+ggplot(data.frame(Residuals = residuals, Predictions = predictions), aes(x = Predictions, y = Residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0, color = "red") +
+  labs(title = "Residual Plot",
+       x = "Predicted Weight",
+       y = "Residuals")
+```
